@@ -1,3 +1,5 @@
+#functioner
+
 defmodule Test do
   def double(n) do
     n*2
@@ -14,4 +16,6 @@ defmodule Test do
   def circle(r) do
    :math.pi() * :math.pow(r,2)
   end
+
+
 end
