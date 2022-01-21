@@ -36,4 +36,15 @@ defmodule Rec do
     end
   end
 
+  def quickExp2(x,n) do
+    cond do
+      n == 0 -> 1
+      n == 1 -> x
+      rem(n,2) == 0 ->
+        first = exp(x,div(n,2))
+        first * first
+      rem(n,2) != 0 -> x * exp(x,n-1)
+    end
+  end
+
 end
