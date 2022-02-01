@@ -9,9 +9,7 @@ defmodule Emulator do
 
 
   def run(pc, code, mem, reg, out) do
-
     next = Program.read(code, pc)
-
     case next do
 
       {:halt} ->

@@ -17,13 +17,10 @@ defmodule Test do
         {:bne, 4, 0, :loop},  # branch if not equal
         {:halt}
       ]
-
-
     data =
       [
         {:arg, 12}
       ]
-
     prgm = {:prgm, code, data}
     Emulator.run(prgm)
   end

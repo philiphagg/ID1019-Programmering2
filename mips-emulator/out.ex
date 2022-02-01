@@ -4,6 +4,8 @@ defmodule Out do
 
   def put(out, a) do [a|out] end
 
-  def close(out) do Enum.reverse(out) end
+  def close(out) do
+    Enum.reverse(out)
+  end
 
 end
