@@ -10,5 +10,4 @@ defmodule Register do
   def write(reg, 0, _) do reg end
   def write(reg, i, val) do put_elem(reg, i, val) end
 
-
 end
