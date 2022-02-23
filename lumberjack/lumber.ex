@@ -15,7 +15,6 @@ defmodule Lumber do
   def split(seq) do
     split(seq, Enum.sum(seq),[] ,[])
   end
-
   def split([], l , left, right) do
     [{left,right,l}]
   end
@@ -57,8 +56,8 @@ defmodule Lumber do
 
   defmodule Memo do
     def new() do %{} end
-    def add(mem, key, val) do Map.put(mem, :binary.list_to_bin(key), val) end
-    def lookup(mem, key) do Map.get(mem, :binary.list_to_bin(key)) end
+    def add(mem, key, val) do Map.put(mem, :binary.list_to_bin(Enum.sort(key)), val) end
+    def lookup(mem, key) do Map.get(mem, :binary.list_to_bin(Enum.sort(key))) end
   end
   def check(seq, mem) do
     case Memo.lookup(mem, seq) do
