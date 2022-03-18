@@ -1,76 +1,81 @@
 defmodule Morse do
   # Some test samples to decode.
-  def base(), do: '.- .-.. .-.. ..-- -.-- --- ..- .-. ..-- -... .- ... . ..-- .- .-. . ..-- -... . .-.. --- -. --. ..-- - --- ..-- ..- ...'
+  def base(), do: '.- .-.. .-.. ..-- -.-- --- ..- .-. ..-- -... .- ... . ..-- .- .-. . ..-- -... . .-.. --- -. --. ..-- - --- ..-- ..- ... '
 
-  def rolled(), do: '.... - - .--. ... ---... .----- .----- .-- .-- .-- .-.-.- -.-- --- ..- - ..- -... . .-.-.- -.-. --- -- .----- .-- .- - -.-. .... ..--.. ...- .----. -.. .--.-- ..... .---- .-- ....- .-- ----. .--.-- ..... --... --. .--.-- ..... ---.. -.-. .--.-- ..... .----'
+  def rolled(), do: '.... - - .--. ... ---... .----- .----- .-- .-- .-- .-.-.- -.-- --- ..- - ..- -... . .-.-.- -.-. --- -- .----- .-- .- - -.-. .... ..--.. ...- .----. -.. .--.-- ..... .---- .-- ....- .-- ----. .--.-- ..... --... --. .--.-- ..... ---.. -.-. .--.-- ..... .---- '
+
+  #@type node() :: {:node, char(), node(), node()} | :nil
+
+  def name_encode(), do: 'philip hagg'
 
   def decode(signal) do
-    table = decode_table()
-    decode(signal, table)
+    table = morse()
+    decode(signal, table, table)
   end
 
-  def decode([], _) do  [] end
-  def decode(signal, table) do
-    {char, rest} = decode_char(signal, table)
-    [char | decode(rest, table)]
+  def decode([], _, _) do  []  end
+  def decode([?- | tail], {:node, _, long, _}, table) do
+    decode(tail, long, table)
+  end
+  def decode([?. | tail], {:node, _, _, short}, table) do
+    decode(tail, short, table)
+  end
+  def decode([?\s | tail], {:node, char, _, _}, table) do
+    [char|decode(tail, table, table) ]
   end
 
-  def decode_char([], {:node, char, _, _}), do: {char, []}
-
-  def decode_char([?- | signal], {:node, _, long, _}) do
-    decode_char(signal, long)
-  end
-  def decode_char([?. | signal], {:node, _, _, short}) do
-    decode_char(signal, short)
-  end
-  def decode_char([?\s | signal], {:node, :na, _, _}) do
-    ## if we end in the midle we return a * char
-    {?*, signal}
-  end
-  def decode_char([?\s | signal], {:node, char, _, _}) do
-    {char, signal}
-  end
 
 
   def encode(text) do
-    table = encode_table()
+    table = encode_table(morse())
     encode(text, [], table)
   end
-  defp encode([], all, _), do: unpack(all, [])
-  defp encode([char | rest], sofar, table) do
-    code = lookup(char, table)
-    encode(rest, [code | sofar], table)
+  def encode([],_, _), do: []
+  def encode([char | rest],so_far, table) do
+    {_, code} = List.keyfind(table, char, 0)
+    code ++ ' ' ++ encode(rest,so_far, table)
   end
 
-  defp unpack([], done), do: done
-  defp unpack([code | rest], sofar) do
-    unpack(rest, code ++ [?\s | sofar])
+  #def encode(text) do
+  #  table = encode_table(morse())
+  #  encode(text, [], table)
+  #end
+#
+  #def encode([char],so_far,table) do
+  #  {c,l} = Enum.find(table, fn({c,l})-> c==char end )
+  #  List.to_string([l|so_far])
+  #end
+#
+  #def encode([char | rest], so_far, table) do
+  #  {c,l} = Enum.find(table, fn({c,l})-> c==char end )
+  #  encode(rest, [l,' '|so_far],table)
+  #end
+
+  def encode_table(tree) do
+    generate_path(tree,[])
+  end
+  #på right kan det behövas reverse
+  def generate_path({:node,char,a,b}, binary_code) do
+    [{char, binary_code}]++generate_path(a,binary_code ++ [?-]) ++ generate_path(b,binary_code ++ [?.])
+
+  end
+  def generate_path(a,code) do
+    case a do
+      nil -> []
+      :na -> []
+      _ -> [{a,code}]
+
+    end
   end
 
-  # Lookup for a character in the encoding table.
-  # Option 1: simple keyfind
-  # defp encode_table, do: codes()
 
-  # defp lookup(char, table) do
-  #   encoding = List.keyfind(table, char, 0)
-  #   elem(encoding, 1)
-  # end
 
-  # Lookup for a character in the encoding table.
-  # Option 2: constant time
-  defp encode_table() do
-    codes()
-    |> fill(0)
-    |> List.to_tuple
-  end
-  defp lookup(char, table), do: elem(table, char)
 
-  defp fill([], _), do: []
-  defp fill([{n, code} | codes], n), do: [code | fill(codes, n + 1)]
-  defp fill(codes, n), do: [:na | fill(codes, n + 1)]
 
-  # Morse decoding tree.
-  defp decode_table do
+
+
+
+  def morse() do
     {:node, :na,
       {:node, 116,
         {:node, 109,
@@ -111,53 +116,53 @@ defmodule Morse do
   end
 
   # Morse representation of common characters.
-  defp codes do
-    [{32, '..--'},
-      {37,'.--.--'},
-      {44,'--..--'},
-      {45,'-....-'},
-      {46,'.-.-.-'},
-      {47,'.-----'},
-      {48,'-----'},
-      {49,'.----'},
-      {50,'..---'},
-      {51,'...--'},
-      {52,'....-'},
-      {53,'.....'},
-      {54,'-....'},
-      {55,'--...'},
-      {56,'---..'},
-      {57,'----.'},
-      {58,'---...'},
-      {61,'.----.'},
-      {63,'..--..'},
-      {64,'.--.-.'},
-      {97,'.-'},
-      {98,'-...'},
-      {99,'-.-.'},
-      {100,'-..'},
-      {101,'.'},
-      {102,'..-.'},
-      {103,'--.'},
-      {104,'....'},
-      {105,'..'},
-      {106,'.---'},
-      {107,'-.-'},
-      {108,'.-..'},
-      {109,'--'},
-      {110,'-.'},
-      {111,'---'},
-      {112,'.--.'},
-      {113,'--.-'},
-      {114,'.-.'},
-      {115,'...'},
-      {116,'-'},
-      {117,'..-'},
-      {118,'...-'},
-      {119,'.--'},
-      {120,'-..-'},
-      {121,'-.--'},
-      {122,'--..'}]
-  end
+  #defp codes do
+  #  [{32, '..--'},
+  #    {37,'.--.--'},
+  #    {44,'--..--'},
+  #    {45,'-....-'},
+  #    {46,'.-.-.-'},
+  #    {47,'.-----'},
+  #    {48,'-----'},
+  #    {49,'.----'},
+  #    {50,'..---'},
+  #    {51,'...--'},
+  #    {52,'....-'},
+  #    {53,'.....'},
+  #    {54,'-....'},
+  #    {55,'--...'},
+  #    {56,'---..'},
+  #    {57,'----.'},
+  #    {58,'---...'},
+  #    {61,'.----.'},
+  #    {63,'..--..'},
+  #    {64,'.--.-.'},
+  #    {97,'.-'},
+  #    {98,'-...'},
+  #    {99,'-.-.'},
+  #    {100,'-..'},
+  #    {101,'.'},
+  #    {102,'..-.'},
+  #    {103,'--.'},
+  #    {104,'....'},
+  #    {105,'..'},
+  #    {106,'.---'},
+  #    {107,'-.-'},
+  #    {108,'.-..'},
+  #    {109,'--'},
+  #    {110,'-.'},
+  #    {111,'---'},
+  #    {112,'.--.'},
+  #    {113,'--.-'},
+  #    {114,'.-.'},
+  #    {115,'...'},
+  #    {116,'-'},
+  #    {117,'..-'},
+  #    {118,'...-'},
+  #    {119,'.--'},
+  #    {120,'-..-'},
+  #    {121,'-.--'},
+  #    {122,'--..'}]
+  #end
 
 end

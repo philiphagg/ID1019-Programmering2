@@ -181,6 +181,7 @@ represent english but it is probably not that far off'
   end
 
 
+
   #def decode(seq, table) do
   #  {char, rest} = decode_char(seq, 1, table)
   #  [char | decode(rest, table)]
