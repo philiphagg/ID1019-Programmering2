@@ -32,7 +32,7 @@ defmodule Morse do
   end
   def encode([],_, _), do: []
   def encode([char | rest],so_far, table) do
-    {_, code} = List.keyfind(table, char, 0)
+    {_, code} = BinarySearch.search(table, char)
     code ++ ' ' ++ encode(rest,so_far, table)
   end
 
@@ -52,14 +52,14 @@ defmodule Morse do
   #end
 
   def encode_table(tree) do
-    generate_path(tree,[])
+    Enum.sort(path_finder(tree,[]))
   end
   #på right kan det behövas reverse
-  def generate_path({:node,char,a,b}, binary_code) do
-    [{char, binary_code}]++generate_path(a,binary_code ++ [?-]) ++ generate_path(b,binary_code ++ [?.])
+  def path_finder({:node,char,a,b}, binary_code) do
+    [{char, binary_code}]++path_finder(a,binary_code ++ [?-]) ++ path_finder(b,binary_code ++ [?.])
 
   end
-  def generate_path(a,code) do
+  def path_finder(a,code) do
     case a do
       nil -> []
       :na -> []
